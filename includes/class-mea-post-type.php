@@ -7,7 +7,7 @@ if ( ! defined('ABSPATH')) {
     exit;
 }
 
-class MEA_Post_Type {
+class SIMESC_Post_Type {
     
     public function init() {
         // Register post type and meta fields on init hook
@@ -20,38 +20,38 @@ class MEA_Post_Type {
      */
     public function register_post_type() {
         $labels = array(
-            'name'                  => _x('Automated Emails', 'Post Type General Name', 'email-scheduler'),
-            'singular_name'         => _x('Automated Email', 'Post Type Singular Name', 'email-scheduler'),
-            'menu_name'             => __('Email Scheduler', 'email-scheduler'),
-            'name_admin_bar'        => __('Automated Email', 'email-scheduler'),
-            'archives'              => __('Email Archives', 'email-scheduler'),
-            'attributes'            => __('Email Attributes', 'email-scheduler'),
-            'parent_item_colon'     => __('Parent Email:', 'email-scheduler'),
-            'all_items'             => __('All Emails', 'email-scheduler'),
-            'add_new_item'          => __('Add New Email', 'email-scheduler'),
-            'add_new'               => __('Add New', 'email-scheduler'),
-            'new_item'              => __('New Email', 'email-scheduler'),
-            'edit_item'             => __('Edit Email', 'email-scheduler'),
-            'update_item'           => __('Update Email', 'email-scheduler'),
-            'view_item'             => __('View Email', 'email-scheduler'),
-            'view_items'            => __('View Emails', 'email-scheduler'),
-            'search_items'          => __('Search Email', 'email-scheduler'),
-            'not_found'             => __('Not found', 'email-scheduler'),
-            'not_found_in_trash'    => __('Not found in Trash', 'email-scheduler'),
-            'featured_image'        => __('Featured Image', 'email-scheduler'),
-            'set_featured_image'    => __('Set featured image', 'email-scheduler'),
-            'remove_featured_image' => __('Remove featured image', 'email-scheduler'),
-            'use_featured_image'    => __('Use as featured image', 'email-scheduler'),
-            'insert_into_item'      => __('Insert into email', 'email-scheduler'),
-            'uploaded_to_this_item' => __('Uploaded to this email', 'email-scheduler'),
-            'items_list'            => __('Emails list', 'email-scheduler'),
-            'items_list_navigation' => __('Emails list navigation', 'email-scheduler'),
-            'filter_items_list'     => __('Filter emails list', 'email-scheduler'),
+            'name'                  => _x('Automated Emails', 'Post Type General Name', 'simple-email-scheduler'),
+            'singular_name'         => _x('Automated Email', 'Post Type Singular Name', 'simple-email-scheduler'),
+            'menu_name'             => __('Email Scheduler', 'simple-email-scheduler'),
+            'name_admin_bar'        => __('Automated Email', 'simple-email-scheduler'),
+            'archives'              => __('Email Archives', 'simple-email-scheduler'),
+            'attributes'            => __('Email Attributes', 'simple-email-scheduler'),
+            'parent_item_colon'     => __('Parent Email:', 'simple-email-scheduler'),
+            'all_items'             => __('All Emails', 'simple-email-scheduler'),
+            'add_new_item'          => __('Add New Email', 'simple-email-scheduler'),
+            'add_new'               => __('Add New', 'simple-email-scheduler'),
+            'new_item'              => __('New Email', 'simple-email-scheduler'),
+            'edit_item'             => __('Edit Email', 'simple-email-scheduler'),
+            'update_item'           => __('Update Email', 'simple-email-scheduler'),
+            'view_item'             => __('View Email', 'simple-email-scheduler'),
+            'view_items'            => __('View Emails', 'simple-email-scheduler'),
+            'search_items'          => __('Search Email', 'simple-email-scheduler'),
+            'not_found'             => __('Not found', 'simple-email-scheduler'),
+            'not_found_in_trash'    => __('Not found in Trash', 'simple-email-scheduler'),
+            'featured_image'        => __('Featured Image', 'simple-email-scheduler'),
+            'set_featured_image'    => __('Set featured image', 'simple-email-scheduler'),
+            'remove_featured_image' => __('Remove featured image', 'simple-email-scheduler'),
+            'use_featured_image'    => __('Use as featured image', 'simple-email-scheduler'),
+            'insert_into_item'      => __('Insert into email', 'simple-email-scheduler'),
+            'uploaded_to_this_item' => __('Uploaded to this email', 'simple-email-scheduler'),
+            'items_list'            => __('Emails list', 'simple-email-scheduler'),
+            'items_list_navigation' => __('Emails list navigation', 'simple-email-scheduler'),
+            'filter_items_list'     => __('Filter emails list', 'simple-email-scheduler'),
         );
         
         $args = array(
-            'label'                 => __('Automated Email', 'email-scheduler'),
-            'description'           => __('Scheduled automated emails', 'email-scheduler'),
+            'label'                 => __('Automated Email', 'simple-email-scheduler'),
+            'description'           => __('Scheduled automated emails', 'simple-email-scheduler'),
             'labels'                => $labels,
             'supports'              => array('title', 'editor', 'thumbnail'),
             'hierarchical'          => false,
@@ -80,7 +80,7 @@ class MEA_Post_Type {
             'show_in_rest'          => false,
         );
         
-        register_post_type('mea_automated_email', $args);
+        register_post_type( SIMESC_POST_TYPE, $args );
     }
     
     /**
@@ -88,7 +88,7 @@ class MEA_Post_Type {
      */
     public function register_meta_fields() {
         // Recipients (stored as JSON array)
-        register_post_meta('mea_automated_email', '_mea_recipients', array(
+        register_post_meta( SIMESC_POST_TYPE, '_simesc_recipients', array(
             'type' => 'string',
             'description' => 'Email recipients (JSON array)',
             'single' => true,
@@ -97,7 +97,7 @@ class MEA_Post_Type {
         ));
         
         // Email subject
-        register_post_meta('mea_automated_email', '_mea_subject', array(
+        register_post_meta( SIMESC_POST_TYPE, '_simesc_subject', array(
             'type' => 'string',
             'description' => 'Email subject line',
             'single' => true,
@@ -106,7 +106,7 @@ class MEA_Post_Type {
         ));
         
         // Day of month (1-31)
-        register_post_meta('mea_automated_email', '_mea_day_of_month', array(
+        register_post_meta( SIMESC_POST_TYPE, '_simesc_day_of_month', array(
             'type' => 'integer',
             'description' => 'Day of month to send email (1-31)',
             'single' => true,
@@ -115,7 +115,7 @@ class MEA_Post_Type {
         ));
         
         // Time to send (HH:MM format)
-        register_post_meta('mea_automated_email', '_mea_send_time', array(
+        register_post_meta( SIMESC_POST_TYPE, '_simesc_send_time', array(
             'type' => 'string',
             'description' => 'Time to send email (HH:MM)',
             'single' => true,
@@ -124,7 +124,7 @@ class MEA_Post_Type {
         ));
         
         // Status (active/inactive)
-        register_post_meta('mea_automated_email', '_mea_status', array(
+        register_post_meta( SIMESC_POST_TYPE, '_simesc_status', array(
             'type' => 'string',
             'description' => 'Email status (active/inactive)',
             'single' => true,
@@ -134,7 +134,7 @@ class MEA_Post_Type {
         ));
         
         // Last sent date
-        register_post_meta('mea_automated_email', '_mea_last_sent', array(
+        register_post_meta( SIMESC_POST_TYPE, '_simesc_last_sent', array(
             'type' => 'string',
             'description' => 'Last sent date',
             'single' => true,

@@ -7,14 +7,14 @@ if ( ! defined('ABSPATH')) {
     exit;
 }
 
-class MEA_Scheduler {
+class SIMESC_Scheduler {
     
     public function init() {
         // Register cron hook
-        add_action('mea_monthly_email_check', array($this, 'check_and_send_emails'));
+        add_action('simesc_monthly_email_check', array($this, 'check_and_send_emails'));
         
         // Schedule if not already scheduled
-        if (!wp_next_scheduled('mea_monthly_email_check')) {
+        if (!wp_next_scheduled('simesc_monthly_email_check')) {
             $this->schedule_monthly_check();
         }
     }
@@ -24,8 +24,8 @@ class MEA_Scheduler {
      */
     public function schedule_monthly_check() {
         // Schedule to run daily at 1 AM to check for emails that need to be sent
-        if (!wp_next_scheduled('mea_monthly_email_check')) {
-            wp_schedule_event(strtotime('tomorrow 1:00'), 'daily', 'mea_monthly_email_check');
+        if (!wp_next_scheduled('simesc_monthly_email_check')) {
+            wp_schedule_event(strtotime('tomorrow 1:00'), 'daily', 'simesc_monthly_email_check');
         }
     }
     
@@ -33,9 +33,9 @@ class MEA_Scheduler {
      * Unschedule monthly check
      */
     public function unschedule_monthly_check() {
-        $timestamp = wp_next_scheduled('mea_monthly_email_check');
+        $timestamp = wp_next_scheduled('simesc_monthly_email_check');
         if ($timestamp) {
-            wp_unschedule_event($timestamp, 'mea_monthly_email_check');
+            wp_unschedule_event($timestamp, 'simesc_monthly_email_check');
         }
     }
     
@@ -45,13 +45,13 @@ class MEA_Scheduler {
     public function check_and_send_emails() {
         // Get all active automated emails
         $emails = get_posts(array(
-            'post_type' => 'mea_automated_email',
+            'post_type' => SIMESC_POST_TYPE,
             'posts_per_page' => -1,
             'post_status' => 'publish',
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for filtering active emails
             'meta_query' => array(
                 array(
-                    'key' => '_mea_status',
+                    'key' => '_simesc_status',
                     'value' => 'active',
                     'compare' => '='
                 )
@@ -67,12 +67,12 @@ class MEA_Scheduler {
         $current_hour = (int) current_time('H');
         $current_minute = (int) current_time('i');
         
-        $email_sender = new MEA_Email_Sender();
+        $email_sender = new SIMESC_Email_Sender();
         
         foreach ($emails as $email_post) {
-            $day_of_month = (int) get_post_meta($email_post->ID, '_mea_day_of_month', true);
-            $send_time = get_post_meta($email_post->ID, '_mea_send_time', true);
-            $last_sent = get_post_meta($email_post->ID, '_mea_last_sent', true);
+            $day_of_month = (int) get_post_meta($email_post->ID, '_simesc_day_of_month', true);
+            $send_time = get_post_meta($email_post->ID, '_simesc_send_time', true);
+            $last_sent = get_post_meta($email_post->ID, '_simesc_last_sent', true);
             
             // Skip if no day or time set
             if (empty($day_of_month) || empty($send_time)) {

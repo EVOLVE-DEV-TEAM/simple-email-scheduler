@@ -2,7 +2,7 @@ jQuery(document).ready(function($) {
     // Add recipient
     $('#mea-add-recipient').on('click', function() {
         var newRow = $('<div class="mea-recipient-row" style="margin-bottom: 5px;">' +
-            '<input type="email" name="mea_recipients[]" value="" class="regular-text" placeholder="email@example.com" />' +
+            '<input type="email" name="simesc_recipients[]" value="" class="regular-text" placeholder="email@example.com" />' +
             '<button type="button" class="button mea-remove-recipient">Remove</button>' +
             '</div>');
         $('#mea-recipients-container').append(newRow);
@@ -38,11 +38,11 @@ jQuery(document).ready(function($) {
             return false;
         }
         
-        var subject = $('#mea_subject').val();
+        var subject = $('#simesc_subject').val();
         if (!subject || subject.trim() === '') {
             e.preventDefault();
             alert('Please enter an email subject. This field is required.');
-            $('#mea_subject').focus();
+            $('#simesc_subject').focus();
             return false;
         }
         
@@ -50,7 +50,7 @@ jQuery(document).ready(function($) {
         if (subject.length > 78) {
             if (!confirm('Email subject is longer than 78 characters. Some email clients may truncate it. Do you want to continue?')) {
                 e.preventDefault();
-                $('#mea_subject').focus();
+                $('#simesc_subject').focus();
                 return false;
             }
         }
@@ -68,7 +68,7 @@ jQuery(document).ready(function($) {
             // Add recipients from selected list
             $.each(recipientsData, function(index, email) {
                 var newRow = $('<div class="mea-recipient-row" style="margin-bottom: 5px;">' +
-                    '<input type="email" name="mea_recipients[]" value="' + email + '" class="regular-text" placeholder="email@example.com" />' +
+                    '<input type="email" name="simesc_recipients[]" value="' + email + '" class="regular-text" placeholder="email@example.com" />' +
                     '<button type="button" class="button mea-remove-recipient">Remove</button>' +
                     '</div>');
                 $('#mea-recipients-container').append(newRow);
@@ -104,11 +104,11 @@ jQuery(document).ready(function($) {
         
         // AJAX request
         $.ajax({
-            url: meaAdmin.ajaxUrl,
+            url: simescAdmin.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'mea_save_recipients',
-                nonce: meaAdmin.nonce,
+                action: 'simesc_save_recipients',
+                nonce: simescAdmin.nonce,
                 name: name,
                 recipients: recipients
             },
@@ -152,7 +152,7 @@ jQuery(document).ready(function($) {
         // Add loaded recipients
         recipients.forEach(function(email) {
             var newRow = $('<div class="mea-recipient-row" style="margin-bottom: 5px;">' +
-                '<input type="email" name="mea_recipients[]" value="' + email + '" class="regular-text" placeholder="email@example.com" />' +
+                '<input type="email" name="simesc_recipients[]" value="' + email + '" class="regular-text" placeholder="email@example.com" />' +
                 '<button type="button" class="button mea-remove-recipient">Remove</button>' +
                 '</div>');
             $('#mea-recipients-container').append(newRow);
@@ -183,11 +183,11 @@ jQuery(document).ready(function($) {
         
         // AJAX request
         $.ajax({
-            url: meaAdmin.ajaxUrl,
+            url: simescAdmin.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'mea_delete_recipients',
-                nonce: meaAdmin.nonce,
+                action: 'simesc_delete_recipients',
+                nonce: simescAdmin.nonce,
                 key: selectedKey
             },
             success: function(response) {
@@ -205,6 +205,73 @@ jQuery(document).ready(function($) {
                 $btn.prop('disabled', false).text('Delete');
             }
         });
+    });
+    
+    // Send test / preview email
+    $('#simesc-send-test-email').on('click', function() {
+        var $btn = $(this);
+        var postId = parseInt($btn.data('post-id'), 10) || 0;
+        var email = $('#simesc_test_email').val();
+        var $status = $('#simesc-test-email-status');
+        var i18n = (simescAdmin && simescAdmin.i18n) ? simescAdmin.i18n : {};
+
+        if (!postId) {
+            alert(i18n.saveFirst || 'Please save this email first, then send a test.');
+            return;
+        }
+
+        if (!email || email.indexOf('@') < 1) {
+            alert(i18n.enterEmail || 'Please enter a valid test email address.');
+            $('#simesc_test_email').focus();
+            return;
+        }
+
+        $btn.prop('disabled', true).text(i18n.sending || 'Sending…');
+        $status.text('').css('color', '');
+
+        $.ajax({
+            url: simescAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'simesc_send_test_email',
+                nonce: simescAdmin.testNonce,
+                post_id: postId,
+                email: email
+            },
+            success: function(response) {
+                if (response.success) {
+                    $status.css('color', 'green').text(response.data.message || 'Sent.');
+                } else {
+                    $status.css('color', 'red').text((response.data && response.data.message) ? response.data.message : (i18n.errorGeneric || 'Error'));
+                }
+                $btn.prop('disabled', false).text(i18n.sendTest || 'Send Test / Preview');
+            },
+            error: function() {
+                $status.css('color', 'red').text(i18n.errorGeneric || 'An error occurred. Please try again.');
+                $btn.prop('disabled', false).text(i18n.sendTest || 'Send Test / Preview');
+            }
+        });
+    });
+
+    // Admin recipient lists page functionality
+    // Add recipient
+    $('#mea-admin-add-recipient').on('click', function() {
+        var newRow = $('<div class="mea-recipient-row" style="margin-bottom: 5px;">' +
+            '<input type="email" name="recipients[]" class="regular-text" placeholder="email@example.com" />' +
+            '<button type="button" class="button mea-remove-recipient">Remove</button>' +
+            '</div>');
+        $('#mea-admin-recipients-container').append(newRow);
+    });
+    
+    // Remove recipient (for admin page)
+    $(document).on('click', '#mea-admin-recipients-container .mea-remove-recipient', function() {
+        var container = $('#mea-admin-recipients-container');
+        var rows = container.find('.mea-recipient-row');
+        if (rows.length > 1) {
+            $(this).closest('.mea-recipient-row').remove();
+        } else {
+            $(this).closest('.mea-recipient-row').find('input').val('');
+        }
     });
 });
 

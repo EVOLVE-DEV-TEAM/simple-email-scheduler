@@ -1,165 +1,125 @@
-=== Email Scheduler ===
-Contributors: elearningevolve
+=== Simple Email Scheduler ===
+Contributors: adeelraza_786hotmailcom, elearningevolve
 Donate link: https://link.elearningevolve.com/self-pay
-Tags: email, automation, newsletters, scheduled, wp-mail
+Tags: email scheduler, recurring emails, newsletter automation, scheduled emails, wp-cron
 Requires at least: 6.0
-Tested up to: 6.8
-Stable tag: 1.0.0
+Tested up to: 7.0
+Stable tag: 1.0.3
 Requires PHP: 7.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Schedule and automate recurring email campaigns, newsletters, and recurring emails. Send automated emails to multiple recipients with WordPress cron.
+Schedule recurring WordPress emails and newsletters by day and time. Recipient lists, inbox preview text, test send, and delivery logs.
 
 == Description ==
 
-**Email Scheduler** is a powerful WordPress plugin that enables you to schedule, automate, and manage recurring email campaigns directly from your WordPress admin dashboard. Perfect for recurring newsletters, automated email marketing, scheduled announcements, recurring reminders, and any recurring email communications.
+**Dedicated support**  
+[Contact eLearning evolve](https://elearningevolve.com/contact/)
 
-**Why Choose Email Scheduler?**
+**Simple Email Scheduler** is a WordPress email scheduler for recurring newsletters and automated messages. Pick a day of the month and a time, choose recipients, write your content once, and WordPress cron sends it on schedule via `wp_mail()`.
 
-* **Simple Setup**: Create automated emails as WordPress posts - no complex configuration needed
-* **Flexible Scheduling**: Set any day of the month and time for automatic email delivery
-* **Multiple Recipients**: Send to unlimited email addresses per campaign
-* **Recipient Management**: Save and reuse recipient lists across multiple email campaigns
-* **Delivery Tracking**: Complete email logging with delivery status and error messages
-* **WordPress Native**: Built using WordPress core functions and follows WordPress coding standards
-* **SMTP Compatible**: Works seamlessly with all SMTP plugins and email services
-* **Timezone Aware**: Automatically respects your WordPress timezone settings
-* **No External Services**: Uses WordPress built-in cron system - no third-party dependencies
+= What you get =
 
-**Perfect For:**
+* Recurring campaigns as a familiar admin post type (**Recurring Emails**)
+* Day-of-month (1–31) and time scheduling, using your WordPress timezone
+* Optional **inbox preview text** (preheader) shown under the subject in many inboxes
+* **Send Test / Preview** to any address before you activate a campaign
+* Saved recipient lists you can reuse across campaigns
+* Delivery logs with status, time, and errors
+* Active / inactive control so you can pause without deleting settings
+* Works with SMTP plugins that hook `wp_mail()` (e.g. WP Mail SMTP)
+* No external ESP or API keys required
 
-* Monthly newsletter automation
-* Recurring email marketing campaigns
-* Scheduled monthly reports and updates
-* Automated reminders and notifications
-* Team communication and updates
-* Client monthly reports
-* Membership site recurring emails
-* E-commerce monthly promotions
+= Typical uses =
 
-= Key Features =
+* Monthly newsletters and digests
+* Client or team reports on a fixed day each month
+* Membership or course update emails
+* Recurring reminders and announcements
 
-* **Unlimited Automated Emails**: Create as many recurring email campaigns as you need
-* **Flexible Scheduling**: Set any day of the month (1-31) and specific time for automatic delivery
-* **Multiple Recipients**: Send to unlimited email addresses per campaign
-* **Recipient List Management**: Save recipient lists and reuse them across multiple email campaigns
-* **Email Delivery Logging**: Complete tracking with delivery status, timestamps, and error messages
-* **WordPress Native**: Built using WordPress core functions and follows all WordPress coding standards
-* **Timezone Support**: Automatically respects WordPress timezone settings for accurate scheduling
-* **Rich HTML Emails**: Use WordPress editor to create beautiful HTML email content
-* **Active/Inactive Control**: Easily pause or resume any automated email campaign
-* **SMTP Compatible**: Works with all SMTP plugins and email services
-* **No External Dependencies**: Uses WordPress built-in cron - no third-party services required
+This is not a full email marketing suite (no open/click tracking or drip sequences). For better deliverability, use an SMTP plugin alongside it.
 
-= How It Works =
+= How it works =
 
-1. Create a new "recurring email" post
-2. Add recipients (email addresses)
-3. Write your email content using the WordPress editor
-4. Set the day of month and time to send
-5. Activate the email
-6. The plugin automatically sends emails on schedule using WordPress cron
-
-= Use Cases =
-
-* **Newsletter Automation**: Send recurring newsletters to subscribers automatically
-* **Email Marketing**: Schedule recurring promotional emails and campaigns
-* **Monthly Reports**: Automate monthly reports to clients, team members, or stakeholders
-* **Reminders & Notifications**: Send recurring reminders, notifications, and announcements
-* **Membership Sites**: Automated monthly updates for membership sites
-* **E-commerce**: Monthly promotional emails and product updates
-* **Team Communication**: Regular updates and reports to team members
-* **Client Updates**: Automated monthly status reports and updates
+1. Create a campaign under **Recurring Emails → Add New**
+2. Set subject, optional inbox preview text, body, recipients, day, and time
+3. Optionally send a test / preview email
+4. Set status to Active and save
+5. WordPress cron sends when the schedule matches; results appear in the log
 
 == Installation ==
 
-= Automatic Installation =
+= Automatic =
 
-1. Go to Plugins → Add New in your WordPress admin
-2. Search for "Email Scheduler"
-3. Click "Install Now"
-4. Activate the plugin
+1. Go to **Plugins → Add New**
+2. Search for **Simple Email Scheduler**
+3. Install and activate
+4. Open **Recurring Emails** in the admin menu
 
-= Manual Installation =
+= Manual =
 
-1. Upload the `monthly-email-automation` folder to `/wp-content/plugins/`
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Go to "Email Scheduler" in the admin menu to create your first automated email
+1. Upload the plugin folder to `/wp-content/plugins/`
+2. Activate under **Plugins**
+3. Create your first campaign under **Recurring Emails**
 
 == Frequently Asked Questions ==
 
-= How does recurring email automation work? =
+= Does this work with SMTP plugins? =
 
-The plugin uses WordPress cron to automatically check daily for scheduled emails. When the scheduled day and time arrives, emails are automatically sent to all configured recipients.
+Yes. It uses WordPress `wp_mail()`, so SMTP plugins apply automatically.
 
-= Can I send automated emails to multiple recipients? =
+= What is inbox preview text? =
 
-Yes! You can add unlimited email addresses to each automated email campaign. The plugin also allows you to save recipient lists and reuse them across multiple email campaigns.
+Optional preheader text many email clients show under the subject in the inbox. It is separate from the subject line.
 
-= What happens if I schedule an email for day 31 and the month only has 30 days? =
+= How do I test an email? =
 
-The plugin automatically handles edge cases. If you schedule an email for day 31 and the month only has 30 days (like February), the email will be sent on the last day of that month instead.
+On the campaign edit screen, enter an address and click **Send Test / Preview**. The subject is prefixed with `[TEST]`. The campaign does not need to be Active.
 
-= How do I test my automated emails? =
+= What if I schedule day 31 in a shorter month? =
 
-Simply create an email, set it to active, and schedule it for today or tomorrow. The plugin will automatically send it at the scheduled time. You can also check the email logs to verify delivery.
+The plugin sends on the last day of that month.
 
-= Does this plugin work with SMTP plugins like WP Mail SMTP? =
+= Can I pause sending? =
 
-Yes! The plugin uses WordPress's built-in `wp_mail()` function, so it works seamlessly with all SMTP plugins including WP Mail SMTP, Easy WP SMTP, Post SMTP, and any other email service plugin.
+Yes. Set the campaign to Inactive. Settings are kept.
 
-= Can I schedule different emails for different days of the month? =
+= Do I need API keys? =
 
-Absolutely! You can create unlimited automated emails, each with its own schedule. For example, send a newsletter on the 1st, a reminder on the 15th, and a report on the last day of the month.
+No. Scheduling uses WP-Cron; sending uses `wp_mail()`.
 
-= How do I track email delivery? =
+== Our Other Plugins ==
 
-Each email has a built-in log viewer that shows delivery status, recipient email addresses, send times, and any error messages. This helps you monitor the success of your email campaigns.
-
-= Can I pause or deactivate an automated email? =
-
-Yes! Each email has an active/inactive status toggle. Simply set it to inactive to pause sending, and reactivate it anytime to resume automated delivery.
-
-= Does the plugin respect WordPress timezone settings? =
-
-Yes! The plugin automatically uses your WordPress timezone settings, so scheduled times are always accurate for your location.
-
-= Is this plugin compatible with email marketing plugins? =
-
-The plugin works alongside email marketing plugins. It uses WordPress core email functions, so it's compatible with most WordPress email-related plugins and services.
-
-= Can I use HTML in my email content? =
-
-Yes! The plugin uses the WordPress content editor, so you can create rich HTML emails with formatting, images, links, and more.
-
-= How many automated emails can I create? =
-
-There's no limit! Create as many automated recurring emails as you need, each with its own schedule, recipients, and content.
-
-== Screenshots ==
-
-1. Create and manage unlimited automated recurring emails from WordPress admin
-2. Schedule emails by day of month and time with flexible options
-3. Add multiple recipients and save recipient lists for reuse
-4. View comprehensive email delivery logs with status tracking
-5. Email settings panel with subject, recipients, and status controls
-6. Schedule settings showing day of month and send time configuration
+1. [WPZoomy](https://wpzoomy.com/)
+2. [Virtual Classroom – Video Conferencing with BigBlueButton (Free)](https://wordpress.org/plugins/video-conferencing-with-bbb/)
+3. [Virtual Classroom for WordPress (Pro)](https://elearningevolve.com/products/wp-virtual-classroom/)
+4. [LearnDash Student Voice](https://elearningevolve.com/products/learndash-student-voice/)
+5. [UpdateGuard](https://wordpress.org/plugins/updateguard/)
+6. [Topbar Buddy](https://wordpress.org/plugins/topbar-buddy/)
+7. [MasterQuiz AI](https://masterquiz.io/)
+8. [Add From Server Reloaded](https://wordpress.org/plugins/add-from-server-reloaded/)
+9. [Evolve's LearnDash To Lifter](https://wordpress.org/plugins/evolve-learndash-to-lifter/)
+10. [Zoomy Automator Integration](https://wordpress.org/plugins/zoomy-automator-integration/)
 
 == Changelog ==
 
+= 1.0.3 =
+* Added optional inbox preview (preheader) text for inbox snippets under the subject.
+* Added admin Send Test / Preview to email any address without activating the campaign.
+* Updated readme to match current features.
+
+= 1.0.2 =
+* Maintenance and compatibility updates.
+
+= 1.0.1 =
+* Fixed custom post type registration by shortening the post type slug to a WordPress-safe length (20 chars max).
+* Standardized post type usage with a shared constant across registration, admin, scheduler, and sender.
+* Updated setup guidance to reflect the admin menu location.
+
 = 1.0.0 =
-* Initial release
-* Create unlimited automated recurring emails
-* Schedule emails by day of month and time
-* Multiple recipients support
-* Save and reuse recipient lists
-* Email delivery logging
-* WordPress timezone support
-* Daily cron scheduling
+* Initial release: monthly scheduling, recipients, lists, logs, active/inactive control.
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release of Email Scheduler.
-
+= 1.0.3 =
+Adds inbox preview text and a one-click test email send from the campaign editor.
