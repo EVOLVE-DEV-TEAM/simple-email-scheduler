@@ -199,14 +199,32 @@ class SIMESC_Admin {
                 <th><label for="simesc_day_of_month"><?php esc_html_e('Day of Month', 'simple-email-scheduler'); ?></label></th>
                 <td>
                     <input type="number" id="simesc_day_of_month" name="simesc_day_of_month" value="<?php echo esc_attr($day_of_month); ?>" min="1" max="31" step="1" class="small-text" style="width: 80px;" />
-                    <p class="description"><?php esc_html_e('Day of the month to send this email (1-31).', 'simple-email-scheduler'); ?></p>
+                    <p class="description"><?php esc_html_e('Day of the month to send this email (1–31), based on your WordPress site timezone.', 'simple-email-scheduler'); ?></p>
                 </td>
             </tr>
             <tr>
                 <th><label for="simesc_send_time"><?php esc_html_e('Send Time', 'simple-email-scheduler'); ?></label></th>
                 <td>
                     <input type="time" id="simesc_send_time" name="simesc_send_time" value="<?php echo esc_attr($send_time); ?>" />
-                    <p class="description"><?php esc_html_e('Time of day to send the email (24-hour format).', 'simple-email-scheduler'); ?></p>
+                    <?php
+                    $timezone_label = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : (string) get_option( 'timezone_string', 'UTC' );
+                    if ( '' === $timezone_label ) {
+                        $offset = (float) get_option( 'gmt_offset', 0 );
+                        $timezone_label = sprintf( 'UTC%s%s', $offset >= 0 ? '+' : '', $offset );
+                    }
+                    ?>
+                    <p class="description">
+                        <?php
+                        printf(
+                            /* translators: %s: WordPress site timezone name, e.g. Asia/Karachi */
+                            esc_html__( 'Time of day to send the email (24-hour format), using your WordPress site timezone: %s.', 'simple-email-scheduler' ),
+                            esc_html( $timezone_label )
+                        );
+                        ?>
+                        <a href="<?php echo esc_url( admin_url( 'options-general.php#timezone_string' ) ); ?>">
+                            <?php esc_html_e( 'Change timezone', 'simple-email-scheduler' ); ?>
+                        </a>
+                    </p>
                 </td>
             </tr>
         </table>
@@ -230,20 +248,38 @@ class SIMESC_Admin {
                 <th><label for="simesc_day_of_month"><?php esc_html_e('Day of Month', 'simple-email-scheduler'); ?></label></th>
                 <td>
                     <input type="number" id="simesc_day_of_month" name="simesc_day_of_month" value="<?php echo esc_attr($day_of_month); ?>" min="1" max="31" step="1" class="small-text" style="width: 80px;" />
-                    <p class="description"><?php esc_html_e('Day of the month to send this email (1-31).', 'simple-email-scheduler'); ?></p>
+                    <p class="description"><?php esc_html_e('Day of the month to send this email (1–31), based on your WordPress site timezone.', 'simple-email-scheduler'); ?></p>
                 </td>
             </tr>
             <tr>
                 <th><label for="simesc_send_time"><?php esc_html_e('Send Time', 'simple-email-scheduler'); ?></label></th>
                 <td>
                     <input type="time" id="simesc_send_time" name="simesc_send_time" value="<?php echo esc_attr($send_time); ?>" />
-                    <p class="description"><?php esc_html_e('Time of day to send the email (24-hour format).', 'simple-email-scheduler'); ?></p>
+                    <?php
+                    $timezone_label = function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : (string) get_option( 'timezone_string', 'UTC' );
+                    if ( '' === $timezone_label ) {
+                        $offset = (float) get_option( 'gmt_offset', 0 );
+                        $timezone_label = sprintf( 'UTC%s%s', $offset >= 0 ? '+' : '', $offset );
+                    }
+                    ?>
+                    <p class="description">
+                        <?php
+                        printf(
+                            /* translators: %s: WordPress site timezone name, e.g. Asia/Karachi */
+                            esc_html__( 'Time of day to send the email (24-hour format), using your WordPress site timezone: %s.', 'simple-email-scheduler' ),
+                            esc_html( $timezone_label )
+                        );
+                        ?>
+                        <a href="<?php echo esc_url( admin_url( 'options-general.php#timezone_string' ) ); ?>">
+                            <?php esc_html_e( 'Change timezone', 'simple-email-scheduler' ); ?>
+                        </a>
+                    </p>
                 </td>
             </tr>
         </table>
         <p class="description">
             <strong><?php esc_html_e('Note:', 'simple-email-scheduler'); ?></strong><br>
-            <?php esc_html_e('The email will be sent on the specified day and time each month. If the day doesn\'t exist in a month (e.g., Feb 30), it will be sent on the last day of that month.', 'simple-email-scheduler'); ?>
+            <?php esc_html_e('The email will be sent on the specified day and time each month (WordPress site timezone). If the day doesn\'t exist in a month (e.g., Feb 30), it will be sent on the last day of that month.', 'simple-email-scheduler'); ?>
         </p>
         <?php
     }
