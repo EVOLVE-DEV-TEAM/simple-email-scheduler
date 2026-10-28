@@ -159,6 +159,12 @@ simple-email-scheduler/
 
 ## Changelog
 
+### 1.0.4
+
+- Fixed monthly send gate (campaigns can send again each new month)
+- Removed broken Quick Edit callback that could fatal in admin
+- Hardened admin JS enqueue / localization
+
 ### 1.0.3
 
 - Inbox preview (preheader) field for inbox snippet text

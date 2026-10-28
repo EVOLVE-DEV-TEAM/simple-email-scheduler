@@ -1,4 +1,8 @@
 jQuery(document).ready(function($) {
+    if (typeof simescAdmin === 'undefined') {
+        return;
+    }
+
     // Add recipient
     $('#mea-add-recipient').on('click', function() {
         var newRow = $('<div class="mea-recipient-row" style="margin-bottom: 5px;">' +

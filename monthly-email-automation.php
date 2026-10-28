@@ -6,7 +6,7 @@
  * Plugin Name:       Simple Email Scheduler
  * Plugin URI:        https://wordpress.org/plugins/simple-email-scheduler/
  * Description:       Schedule and automate recurring email campaigns, newsletters, and recurring emails. Send automated emails to multiple recipients with WordPress cron. Track delivery logs and manage recipient lists.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Author:            Evolve
  * Author URI:        https://profiles.wordpress.org/adeelraza_786hotmailcom
  * License:           GPL-3.0+
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
 
 defined('SIMESC_MIN_WP') || define('SIMESC_MIN_WP', '6.0');
 defined('SIMESC_MIN_PHP') || define('SIMESC_MIN_PHP', '7.4');
-defined('SIMESC_VERSION') || define('SIMESC_VERSION', '1.0.3');
+defined('SIMESC_VERSION') || define('SIMESC_VERSION', '1.0.4');
 // WordPress post type names must be 20 characters or fewer.
 defined('SIMESC_POST_TYPE') || define('SIMESC_POST_TYPE', 'simesc_auto_email');
 defined('SIMESC_PLUGIN_FILE') || define('SIMESC_PLUGIN_FILE', __FILE__);

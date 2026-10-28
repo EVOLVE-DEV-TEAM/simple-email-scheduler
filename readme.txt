@@ -4,7 +4,7 @@ Donate link: https://link.elearningevolve.com/self-pay
 Tags: email scheduler, recurring emails, newsletter automation, scheduled emails, wp-cron
 Requires at least: 6.0
 Tested up to: 7.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 Requires PHP: 7.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -103,6 +103,11 @@ No. Scheduling uses WP-Cron; sending uses `wp_mail()`.
 
 == Changelog ==
 
+= 1.0.4 =
+* Fixed monthly send gate so campaigns send again each month (broken current_time usage had blocked repeats after the first send).
+* Removed a broken Quick Edit hook that could fatally error in wp-admin.
+* Hardened admin script loading and registered inbox preview meta.
+
 = 1.0.3 =
 * Added optional inbox preview (preheader) text for inbox snippets under the subject.
 * Added admin Send Test / Preview to email any address without activating the campaign.
@@ -120,6 +125,9 @@ No. Scheduling uses WP-Cron; sending uses `wp_mail()`.
 * Initial release: monthly scheduling, recipients, lists, logs, active/inactive control.
 
 == Upgrade Notice ==
+
+= 1.0.4 =
+Important scheduler fix so monthly emails can send every month again, plus admin stability fixes.
 
 = 1.0.3 =
 Adds inbox preview text and a one-click test email send from the campaign editor.

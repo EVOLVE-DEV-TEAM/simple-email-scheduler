@@ -18,8 +18,6 @@ class SIMESC_Admin {
         // Add custom columns
         add_filter( 'manage_' . SIMESC_POST_TYPE . '_posts_columns', array( $this, 'add_custom_columns' ) );
         add_action( 'manage_' . SIMESC_POST_TYPE . '_posts_custom_column', array( $this, 'render_custom_columns' ), 10, 2 );
-        // Add quick edit support
-        add_action('quick_edit_custom_box', array($this, 'quick_edit_fields'), 10, 2);
         // Enqueue admin scripts
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         // AJAX handlers for saved recipients
@@ -467,56 +465,42 @@ class SIMESC_Admin {
      * Enqueue admin scripts
      */
     public function enqueue_admin_scripts($hook) {
-        // Enqueue for post edit pages
-        if ('post.php' === $hook || 'post-new.php' === $hook) {
-            global $post_type;
-            if ( SIMESC_POST_TYPE === $post_type ) {
-                wp_enqueue_script(
-                    'simesc-admin-js',
-                    SIMESC_PLUGIN_DIR_URL . 'assets/js/admin.js',
-                    array('jquery'),
-                    SIMESC_VERSION,
-                    true
-                );
-                // Localize script for AJAX (keep object name stable to avoid JS changes)
-                wp_localize_script(
-                    'simesc-admin-js',
-                    'simescAdmin',
-                    array(
-                        'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-                        'nonce'        => wp_create_nonce( 'simesc_recipients_nonce' ),
-                        'testNonce'    => wp_create_nonce( 'simesc_test_email_nonce' ),
-                        'i18n'         => array(
-                            'sending'      => __( 'Sending…', 'simple-email-scheduler' ),
-                            'sendTest'     => __( 'Send Test / Preview', 'simple-email-scheduler' ),
-                            'enterEmail'   => __( 'Please enter a valid test email address.', 'simple-email-scheduler' ),
-                            'saveFirst'    => __( 'Please save this email first, then send a test.', 'simple-email-scheduler' ),
-                            'errorGeneric' => __( 'An error occurred. Please try again.', 'simple-email-scheduler' ),
-                        ),
-                    )
-                );
-            }
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        $is_email_edit = ( 'post.php' === $hook || 'post-new.php' === $hook )
+            && $screen
+            && isset( $screen->post_type )
+            && SIMESC_POST_TYPE === $screen->post_type;
+        $is_lists_page = ( SIMESC_POST_TYPE . '_page_simesc-recipient-lists' === $hook );
+
+        if ( ! $is_email_edit && ! $is_lists_page ) {
+            return;
         }
-        // Enqueue for recipient lists page
-        if ( SIMESC_POST_TYPE . '_page_simesc-recipient-lists' === $hook ) {
-            wp_enqueue_script(
-                'simesc-admin-js',
-                SIMESC_PLUGIN_DIR_URL . 'assets/js/admin.js',
-                array('jquery'),
-                SIMESC_VERSION,
-                true
-            );
-            // Localize script for AJAX (keep object name stable to avoid JS changes)
-            wp_localize_script(
-                'simesc-admin-js',
-                'simescAdmin',
-                array(
-                    'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
-                    'nonce'     => wp_create_nonce( 'simesc_recipients_nonce' ),
-                    'testNonce' => wp_create_nonce( 'simesc_test_email_nonce' ),
-                )
+
+        wp_enqueue_script(
+            'simesc-admin-js',
+            SIMESC_PLUGIN_DIR_URL . 'assets/js/admin.js',
+            array( 'jquery' ),
+            SIMESC_VERSION,
+            true
+        );
+
+        $localize = array(
+            'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+            'nonce'     => wp_create_nonce( 'simesc_recipients_nonce' ),
+            'testNonce' => wp_create_nonce( 'simesc_test_email_nonce' ),
+        );
+
+        if ( $is_email_edit ) {
+            $localize['i18n'] = array(
+                'sending'      => __( 'Sending…', 'simple-email-scheduler' ),
+                'sendTest'     => __( 'Send Test / Preview', 'simple-email-scheduler' ),
+                'enterEmail'   => __( 'Please enter a valid test email address.', 'simple-email-scheduler' ),
+                'saveFirst'    => __( 'Please save this email first, then send a test.', 'simple-email-scheduler' ),
+                'errorGeneric' => __( 'An error occurred. Please try again.', 'simple-email-scheduler' ),
             );
         }
+
+        wp_localize_script( 'simesc-admin-js', 'simescAdmin', $localize );
     }
 
     /**

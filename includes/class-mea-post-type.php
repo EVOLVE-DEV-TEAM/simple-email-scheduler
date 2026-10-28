@@ -104,6 +104,15 @@ class SIMESC_Post_Type {
             'sanitize_callback' => 'sanitize_text_field',
             'show_in_rest' => false,
         ));
+
+        // Optional inbox preview / preheader
+        register_post_meta( SIMESC_POST_TYPE, '_simesc_preheader', array(
+            'type'              => 'string',
+            'description'       => 'Inbox preview (preheader) text',
+            'single'            => true,
+            'sanitize_callback' => 'sanitize_text_field',
+            'show_in_rest'      => false,
+        ) );
         
         // Day of month (1-31)
         register_post_meta( SIMESC_POST_TYPE, '_simesc_day_of_month', array(

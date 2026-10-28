@@ -117,39 +117,35 @@ class SIMESC_Scheduler {
     }
     
     /**
-     * Check if email should be sent today
+     * Whether this campaign should send now (at most once per calendar month).
+     *
+     * @param int    $email_id  Unused; reserved for filters/logging.
+     * @param string $last_sent Last send datetime from post meta (WP local mysql format).
+     * @param string $send_time Unused; time gate is handled by the caller.
+     * @return bool
      */
-    private function should_send_today($email_id, $last_sent, $send_time) {
-        // If never sent, send it
-        if (empty($last_sent)) {
+    private function should_send_today( $email_id, $last_sent, $send_time ) {
+        unset( $email_id, $send_time );
+
+        if ( empty( $last_sent ) ) {
             return true;
         }
-        
-        // Parse last sent timestamp (assume it's in WordPress timezone)
-        $last_sent_timestamp = strtotime($last_sent);
-        if (!$last_sent_timestamp) {
-            return true; // Invalid timestamp, send it
+
+        // Meta is stored via current_time( 'mysql' ) → "Y-m-d H:i:s" in site timezone.
+        $last_sent_month = substr( (string) $last_sent, 0, 7 );
+        if ( ! preg_match( '/^\d{4}-\d{2}$/', $last_sent_month ) ) {
+            $timestamp = strtotime( (string) $last_sent );
+            if ( ! $timestamp ) {
+                return true;
+            }
+            $last_sent_month = wp_date( 'Y-m', $timestamp );
         }
-        
-        // Check if last sent was today (using WordPress timezone)
-        $last_sent_date = current_time('Y-m-d', false, $last_sent_timestamp);
-        $current_date = current_time('Y-m-d');
-        
-        // If last sent was today, don't send again
-        if ($last_sent_date === $current_date) {
+
+        // Already sent this month — do not send again.
+        if ( $last_sent_month === current_time( 'Y-m' ) ) {
             return false;
         }
-        
-        // Check if last sent was this month but on a different day
-        $last_sent_month = current_time('Y-m', false, $last_sent_timestamp);
-        $current_month = current_time('Y-m');
-        
-        // If last sent was in a different month, send it
-        if ($last_sent_month !== $current_month) {
-            return true;
-        }
-        
-        // If last sent was earlier this month but not today, send it
+
         return true;
     }
 }
