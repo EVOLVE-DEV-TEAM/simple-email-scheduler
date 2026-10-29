@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-GPL%20v3%2B-green.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![WordPress.org](https://img.shields.io/badge/WordPress.org-simple--email--scheduler-orange.svg)](https://wordpress.org/plugins/simple-email-scheduler/)
 
-**WordPress plugin to schedule recurring emails and newsletters** — set a day of the month and time, manage recipient lists, preview inbox text, send a test email, and track delivery logs. Uses WordPress cron and `wp_mail()` (works with SMTP plugins).
+**WordPress plugin to schedule recurring emails and newsletters** — set a day and time, send previews, track link clicks, and review delivery logs. Uses WordPress cron and `wp_mail()` (works with SMTP plugins).
 
 **Plugin name:** Simple Email Scheduler  
 **Repo / slug history:** `monthly-email-automation`  
@@ -22,6 +22,7 @@ Create email campaigns as a custom post type (**Recurring Emails**). Each campai
 - Day of month (1–31) and send time
 - Recipients (inline or saved lists)
 - Active / inactive status
+- Link click tracking
 - Delivery log per send
 
 WordPress cron checks daily. When the day and time match, active campaigns are sent automatically.
@@ -36,8 +37,9 @@ WordPress cron checks daily. When the day and time match, active campaigns are s
 | Month-end safety | Day 31 on a shorter month sends on the last day of that month |
 | Recipients | Unlimited addresses per campaign; save and reuse lists |
 | Inbox preview text | Optional preheader for inbox snippet (separate from subject) |
-| Test / preview send | Send a `[TEST]` copy to any address without activating the campaign |
-| Delivery logs | Status, recipient, timestamp, and error message per attempt |
+| Test / preview send | Send a preview copy to any address without activating the campaign |
+| Link click tracking | See who clicked and which links; Clicks screen + list column |
+| Delivery logs | Last 5 sends with status and time |
 | Pause anytime | Active / inactive toggle; settings kept when paused |
 | Native mail stack | `wp_mail()` + WP-Cron — compatible with WP Mail SMTP and similar plugins |
 | No SaaS required | No API keys or third-party ESP required |
@@ -108,7 +110,7 @@ Not a full ESP: no open/click tracking, drip sequences, or list signup forms. Fo
 Yes. Add addresses on the campaign or reuse a saved list.
 
 **How do I preview before going live?**  
-Use **Send Test / Preview** on the campaign edit screen. Subject is prefixed with `[TEST]`. Saved subject, body, and inbox preview text are used.
+Use **Send Test / Preview** on the campaign edit screen. Uses the saved subject, body, and inbox preview text as recipients will see them.
 
 **What is Inbox Preview Text?**  
 The short line many clients show under the subject in the inbox. It is optional and does not replace the subject.
@@ -159,26 +161,18 @@ simple-email-scheduler/
 
 ## Changelog
 
-### 1.0.4
+### 2.0.0
 
-- Fixed monthly send gate (campaigns can send again each new month)
-- Removed broken Quick Edit callback that could fatal in admin
-- Hardened admin JS enqueue / localization
-
-### 1.0.3
-
-- Inbox preview (preheader) field for inbox snippet text
-- Admin **Send Test / Preview** for a one-off test to any address
-- Version bump and docs aligned with current features
-
-### 1.0.2 / 1.0.1
-
-- Post type slug length fix and shared constants
-- Admin menu / enqueue consistency
+- Preview emails before going live
+- Inbox preview text under the subject
+- Link click tracking with a dedicated Clicks screen
+- Clearer timezone-aware scheduling
+- More reliable monthly sending
+- Shorter, easier send log (last 5)
 
 ### 1.0.0
 
-- Initial release: monthly schedule, recipients, lists, logs, active toggle
+- First release: monthly schedule, recipients, lists, logs, active toggle
 
 ---
 

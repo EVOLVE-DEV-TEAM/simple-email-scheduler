@@ -32,6 +32,14 @@ class SIMESC_Admin {
     public function add_admin_menu() {
         add_submenu_page(
             'edit.php?post_type=' . SIMESC_POST_TYPE,
+            __( 'Clicks', 'simple-email-scheduler' ),
+            __( 'Clicks', 'simple-email-scheduler' ),
+            'edit_posts',
+            'simesc-clicks',
+            array( $this, 'render_clicks_page' )
+        );
+        add_submenu_page(
+            'edit.php?post_type=' . SIMESC_POST_TYPE,
             __('Recipient Lists', 'simple-email-scheduler'),
             __('Recipient Lists', 'simple-email-scheduler'),
             'manage_options',
@@ -53,10 +61,10 @@ class SIMESC_Admin {
         );
         add_meta_box(
             'simesc_email_logs',
-            __('Email Logs', 'simple-email-scheduler'),
-            array($this, 'render_logs_meta_box'),
+            __( 'Sends & Clicks', 'simple-email-scheduler' ),
+            array( $this, 'render_logs_meta_box' ),
             SIMESC_POST_TYPE,
-            'side',
+            'normal',
             'default'
         );
     }
@@ -125,7 +133,7 @@ class SIMESC_Admin {
                         <?php esc_html_e( 'Send Test / Preview', 'simple-email-scheduler' ); ?>
                     </button>
                     <span id="simesc-test-email-status" style="margin-left:8px;"></span>
-                    <p class="description"><?php esc_html_e('Saves are not required first if the post already exists. Uses current saved subject, preview text, and content. Subject is prefixed with [TEST].', 'simple-email-scheduler'); ?></p>
+                    <p class="description"><?php esc_html_e('Saves are not required first if the post already exists. Uses the current saved subject, inbox preview text, and content as the recipient will see them.', 'simple-email-scheduler'); ?></p>
                 </td>
             </tr>
             <tr>
@@ -302,10 +310,53 @@ class SIMESC_Admin {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $logs = $wpdb->get_results(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name cannot be prepared, validated as safe above
-            $wpdb->prepare( "SELECT * FROM `{$table_name}` WHERE email_id = %d ORDER BY sent_at DESC LIMIT 20", $email_id )
+            $wpdb->prepare( "SELECT * FROM `{$table_name}` WHERE email_id = %d ORDER BY sent_at DESC LIMIT 5", $email_id )
         );
+
+        $click_stats = class_exists( 'SIMESC_Click_Tracker' )
+            ? SIMESC_Click_Tracker::get_stats( $email_id )
+            : array(
+                'total'             => 0,
+                'unique_recipients' => 0,
+                'recent'            => array(),
+            );
         ?>
         <div class="mea-logs-container">
+            <p style="margin-top:0;">
+                <strong><?php esc_html_e( 'Link clicks', 'simple-email-scheduler' ); ?></strong><br>
+                <?php
+                printf(
+                    /* translators: 1: total clicks, 2: unique recipients who clicked */
+                    esc_html__( '%1$d clicks from %2$d recipients', 'simple-email-scheduler' ),
+                    (int) $click_stats['total'],
+                    (int) $click_stats['unique_recipients']
+                );
+                ?>
+            </p>
+            <?php if ( ! empty( $click_stats['recent'] ) ) : ?>
+                <table class="widefat" style="margin-bottom:12px;">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Recipient', 'simple-email-scheduler' ); ?></th>
+                            <th><?php esc_html_e( 'URL', 'simple-email-scheduler' ); ?></th>
+                            <th><?php esc_html_e( 'Clicked', 'simple-email-scheduler' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $click_stats['recent'] as $click ) : ?>
+                            <tr>
+                                <td><?php echo esc_html( $click->recipient_email ); ?></td>
+                                <td style="word-break:break-all;">
+                                    <a href="<?php echo esc_url( $click->url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $click->url ); ?></a>
+                                </td>
+                                <td><?php echo esc_html( $click->clicked_at ); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <p><strong><?php esc_html_e( 'Send log', 'simple-email-scheduler' ); ?></strong></p>
             <?php if (empty($logs)): ?>
                 <p><?php esc_html_e('No emails sent yet.', 'simple-email-scheduler'); ?></p>
             <?php else: ?>
@@ -442,6 +493,7 @@ class SIMESC_Admin {
         $new_columns['simesc_recipients'] = __('Recipients', 'simple-email-scheduler');
         $new_columns['simesc_schedule'] = __('Schedule', 'simple-email-scheduler');
         $new_columns['simesc_status'] = __('Status', 'simple-email-scheduler');
+        $new_columns['simesc_clicks'] = __( 'Clicks', 'simple-email-scheduler' );
         $new_columns['simesc_last_sent'] = __('Last Sent', 'simple-email-scheduler');
         $new_columns['date'] = $columns['date'];
         return $new_columns;
@@ -491,11 +543,159 @@ class SIMESC_Admin {
                     echo '<span style="color: gray;">' . esc_html__('Inactive', 'simple-email-scheduler') . '</span>';
                 }
                 break;
+            case 'simesc_clicks':
+                if ( ! class_exists( 'SIMESC_Click_Tracker' ) ) {
+                    echo '—';
+                    break;
+                }
+                static $simesc_click_totals = null;
+                if ( null === $simesc_click_totals ) {
+                    $simesc_click_totals = SIMESC_Click_Tracker::get_totals_by_campaign();
+                }
+                $total  = isset( $simesc_click_totals[ $post_id ] ) ? (int) $simesc_click_totals[ $post_id ]['total'] : 0;
+                $unique = isset( $simesc_click_totals[ $post_id ] ) ? (int) $simesc_click_totals[ $post_id ]['unique_recipients'] : 0;
+                if ( $total < 1 ) {
+                    echo '—';
+                } else {
+                    printf(
+                        /* translators: 1: total clicks, 2: unique recipients */
+                        esc_html__( '%1$d (%2$d people)', 'simple-email-scheduler' ),
+                        $total,
+                        $unique
+                    );
+                }
+                break;
             case 'simesc_last_sent':
                 $last_sent = get_post_meta($post_id, '_simesc_last_sent', true);
                 echo $last_sent ? esc_html($last_sent) : '—';
                 break;
         }
+    }
+
+    /**
+     * Admin page: click tracking overview across all campaigns.
+     */
+    public function render_clicks_page() {
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            wp_die( esc_html__( 'Permission denied.', 'simple-email-scheduler' ) );
+        }
+
+        if ( ! class_exists( 'SIMESC_Click_Tracker' ) ) {
+            echo '<div class="wrap"><p>' . esc_html__( 'Click tracking is unavailable.', 'simple-email-scheduler' ) . '</p></div>';
+            return;
+        }
+
+        $totals = SIMESC_Click_Tracker::get_totals_by_campaign();
+        $recent = SIMESC_Click_Tracker::get_recent_all( 50 );
+        $all_total = 0;
+        $all_unique_campaigns = count( $totals );
+        foreach ( $totals as $row ) {
+            $all_total += (int) $row['total'];
+        }
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e( 'Email Clicks', 'simple-email-scheduler' ); ?></h1>
+            <p class="description">
+                <?php esc_html_e( 'Link clicks from your scheduled emails. http/https links are tracked automatically when emails are sent.', 'simple-email-scheduler' ); ?>
+            </p>
+
+            <p>
+                <strong><?php echo esc_html( (string) $all_total ); ?></strong>
+                <?php esc_html_e( 'total clicks', 'simple-email-scheduler' ); ?>
+                ·
+                <strong><?php echo esc_html( (string) $all_unique_campaigns ); ?></strong>
+                <?php esc_html_e( 'campaigns with clicks', 'simple-email-scheduler' ); ?>
+            </p>
+
+            <h2><?php esc_html_e( 'By campaign', 'simple-email-scheduler' ); ?></h2>
+            <?php if ( empty( $totals ) ) : ?>
+                <p><?php esc_html_e( 'No clicks recorded yet. Send a campaign (or a test preview) that includes links, then open a link from the email.', 'simple-email-scheduler' ); ?></p>
+            <?php else : ?>
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Campaign', 'simple-email-scheduler' ); ?></th>
+                            <th><?php esc_html_e( 'Clicks', 'simple-email-scheduler' ); ?></th>
+                            <th><?php esc_html_e( 'Unique recipients', 'simple-email-scheduler' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // Sort by total clicks desc.
+                        uasort(
+                            $totals,
+                            static function ( $a, $b ) {
+                                return (int) $b['total'] <=> (int) $a['total'];
+                            }
+                        );
+                        foreach ( $totals as $email_id => $row ) :
+                            $title = get_the_title( $email_id );
+                            if ( '' === $title ) {
+                                $title = sprintf(
+                                    /* translators: %d: post ID */
+                                    __( 'Campaign #%d', 'simple-email-scheduler' ),
+                                    (int) $email_id
+                                );
+                            }
+                            $edit_link = get_edit_post_link( $email_id, 'raw' );
+                            ?>
+                            <tr>
+                                <td>
+                                    <?php if ( $edit_link ) : ?>
+                                        <a href="<?php echo esc_url( $edit_link ); ?>"><?php echo esc_html( $title ); ?></a>
+                                    <?php else : ?>
+                                        <?php echo esc_html( $title ); ?>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo esc_html( (string) (int) $row['total'] ); ?></td>
+                                <td><?php echo esc_html( (string) (int) $row['unique_recipients'] ); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <h2 style="margin-top:2em;"><?php esc_html_e( 'Recent clicks', 'simple-email-scheduler' ); ?></h2>
+            <?php if ( empty( $recent ) ) : ?>
+                <p><?php esc_html_e( 'No recent clicks.', 'simple-email-scheduler' ); ?></p>
+            <?php else : ?>
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'When', 'simple-email-scheduler' ); ?></th>
+                            <th><?php esc_html_e( 'Campaign', 'simple-email-scheduler' ); ?></th>
+                            <th><?php esc_html_e( 'Recipient', 'simple-email-scheduler' ); ?></th>
+                            <th><?php esc_html_e( 'URL', 'simple-email-scheduler' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $recent as $click ) :
+                            $title = get_the_title( $click->email_id );
+                            if ( '' === $title ) {
+                                $title = '#' . (int) $click->email_id;
+                            }
+                            $edit_link = get_edit_post_link( $click->email_id, 'raw' );
+                            ?>
+                            <tr>
+                                <td><?php echo esc_html( $click->clicked_at ); ?></td>
+                                <td>
+                                    <?php if ( $edit_link ) : ?>
+                                        <a href="<?php echo esc_url( $edit_link ); ?>"><?php echo esc_html( $title ); ?></a>
+                                    <?php else : ?>
+                                        <?php echo esc_html( $title ); ?>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo esc_html( $click->recipient_email ); ?></td>
+                                <td style="word-break:break-all;">
+                                    <a href="<?php echo esc_url( $click->url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $click->url ); ?></a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+        <?php
     }
     /**
      * Enqueue admin scripts

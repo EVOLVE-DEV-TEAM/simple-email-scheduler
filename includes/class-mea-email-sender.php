@@ -72,9 +72,6 @@ class SIMESC_Email_Sender {
         
         // Strip HTML tags from subject (WordPress best practice)
         $subject = wp_strip_all_tags($subject);
-        if ( ! empty( $args['is_test'] ) ) {
-            $subject = '[TEST] ' . $subject;
-        }
         
         // Apply filters before sending (WordPress best practice)
         do_action('simesc_email_send_before', $email_id, $recipients, $subject, $content);
@@ -86,6 +83,7 @@ class SIMESC_Email_Sender {
         
         // Prepare email headers
         $headers = array();
+        $click_tracker = class_exists( 'SIMESC_Click_Tracker' ) ? new SIMESC_Click_Tracker() : null;
         
         $sent_count = 0;
         $failed_count = 0;
@@ -97,9 +95,14 @@ class SIMESC_Email_Sender {
                 $failed_count++;
                 continue;
             }
+
+            // Per-recipient tracked links (http/https only).
+            $body = $click_tracker
+                ? $click_tracker->wrap_links( $content, $email_id, $recipient_email )
+                : $content;
             
             // Send email
-            $sent = wp_mail($recipient_email, $subject, $content, $headers);
+            $sent = wp_mail($recipient_email, $subject, $body, $headers);
             
             if ($sent) {
                 $this->log_email(

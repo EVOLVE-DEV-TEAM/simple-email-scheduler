@@ -5,8 +5,8 @@
  *
  * Plugin Name:       Simple Email Scheduler
  * Plugin URI:        https://wordpress.org/plugins/simple-email-scheduler/
- * Description:       Schedule and automate recurring email campaigns, newsletters, and recurring emails. Send automated emails to multiple recipients with WordPress cron. Track delivery logs and manage recipient lists.
- * Version:           1.0.4
+ * Description:       Schedule recurring emails and newsletters, send previews, track link clicks, and review delivery logs — all from your WordPress dashboard.
+ * Version:           2.0.0
  * Author:            Evolve
  * Author URI:        https://profiles.wordpress.org/adeelraza_786hotmailcom
  * License:           GPL-3.0+
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
 
 defined('SIMESC_MIN_WP') || define('SIMESC_MIN_WP', '6.0');
 defined('SIMESC_MIN_PHP') || define('SIMESC_MIN_PHP', '7.4');
-defined('SIMESC_VERSION') || define('SIMESC_VERSION', '1.0.4');
+defined('SIMESC_VERSION') || define('SIMESC_VERSION', '2.0.0');
 // WordPress post type names must be 20 characters or fewer.
 defined('SIMESC_POST_TYPE') || define('SIMESC_POST_TYPE', 'simesc_auto_email');
 defined('SIMESC_PLUGIN_FILE') || define('SIMESC_PLUGIN_FILE', __FILE__);
@@ -49,6 +49,7 @@ if (
     require __DIR__ . '/includes/class-mea-admin.php';
     require __DIR__ . '/includes/class-mea-scheduler.php';
     require __DIR__ . '/includes/class-mea-email-sender.php';
+    require __DIR__ . '/includes/class-mea-click-tracker.php';
 }
 
 /**
@@ -95,8 +96,11 @@ class SIMESC_Plugin
         $scheduler = new SIMESC_Scheduler();
         $scheduler->schedule_monthly_check();
 
-        // Create log table
+        // Create log + click tables
         $this->create_log_table();
+        if ( class_exists( 'SIMESC_Click_Tracker' ) ) {
+            SIMESC_Click_Tracker::create_table();
+        }
     }
 
     public function deactivate()
@@ -123,6 +127,26 @@ class SIMESC_Plugin
         // Initialize scheduler
         $scheduler = new SIMESC_Scheduler();
         $scheduler->init();
+
+        // Click tracking redirect handler (front-end).
+        if ( class_exists( 'SIMESC_Click_Tracker' ) ) {
+            $clicks = new SIMESC_Click_Tracker();
+            $clicks->init();
+            $this->maybe_upgrade_schema();
+        }
+    }
+
+    /**
+     * Ensure click table exists after plugin updates (no re-activate required).
+     */
+    private function maybe_upgrade_schema() {
+        $installed = get_option( 'simesc_db_version', '' );
+        if ( SIMESC_VERSION === $installed ) {
+            return;
+        }
+        $this->create_log_table();
+        SIMESC_Click_Tracker::create_table();
+        update_option( 'simesc_db_version', SIMESC_VERSION, false );
     }
 
     /**
